@@ -18,104 +18,38 @@
 package org.sakaiproject.nakamura.api.lite.authorizable;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 
-import org.apache.commons.lang.StringUtils;
 import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
-import org.sakaiproject.nakamura.api.lite.util.Iterables;
+import org.sakaiproject.nakamura.lite.authorizable.GroupImpl;
 
 import java.util.Map;
-import java.util.Set;
 
-/**
- * A group has a list of members that is maintaiend in the group. This is
- * reflected as principals in each member, managed by the AuthorizableManager,
- * only updated on save.
- * 
- * @author ieb
- * 
- */
-public class Group extends Authorizable {
+public interface Group extends Authorizable {
 
-    /**
-     * The ID of the everyone group. Includes all users except anon.
-     */
-    public static final String EVERYONE = "everyone";
-    public static final Group EVERYONE_GROUP = new Group(ImmutableMap.of("id",StorageClientUtils.toStore(EVERYONE)));
-    private Set<String> members;
-    private Set<String> membersAdded;
-    private Set<String> membersRemoved;
-    private boolean membersModified;
+  /**
+   * The ID of the everyone group. Includes all users except anon.
+   */
+  public static final String EVERYONE = "everyone";
 
-    public Group(Map<String, Object> groupMap) {
-        super(groupMap);
-        this.members = Sets.newLinkedHashSet(Iterables.of(StringUtils.split(
-                StorageClientUtils.toString(authorizableMap.get(MEMBERS_FIELD)), ';')));
-        this.membersAdded = Sets.newHashSet();
-        this.membersRemoved = Sets.newHashSet();
-        membersModified = true;
-    }
+  public static final Group EVERYONE_GROUP = new GroupImpl(ImmutableMap.of("id",
+      StorageClientUtils.toStore(EVERYONE)));
 
-    @Override
-    public Map<String, Object> getPropertiesForUpdate() {
-        if ( membersModified ) {
-            authorizableMap.put(MEMBERS_FIELD, StringUtils.join(members, ';'));
-            propertiesModified.add(MEMBERS_FIELD);
-        }
-        return super.getPropertiesForUpdate();
-    }
-    
-    @Override
-    // TODO: Unit test
-    public Map<String, Object> getSafeProperties() {
-        if ( membersModified ) {
-            authorizableMap.put(MEMBERS_FIELD, StringUtils.join(members, ';'));
-            propertiesModified.add(MEMBERS_FIELD);
-        }
-        return super.getSafeProperties();
-    }
-    
-    @Override
-    // TODO: Unit test
-    public boolean isModified() {
-        return membersModified || super.isModified();
-    }
+  public abstract Map<String, Object> getPropertiesForUpdate();
 
-    public String[] getMembers() {
-        return members.toArray(new String[members.size()]);
-    }
+  public abstract Map<String, Object> getSafeProperties();
 
-    public void addMember(String member) {
-        if (!members.contains(member)) {
-            members.add(member);
-            membersAdded.add(member);
-            membersRemoved.remove(member);
-            membersModified = true;
-        }
-    }
+  public abstract boolean isModified();
 
-    public void removeMember(String member) {
-        if (members.contains(member)) {
-            members.remove(member);
-            membersAdded.remove(member);
-            membersRemoved.add(member);
-            membersModified = true;
-        }
-    }
+  public abstract String[] getMembers();
 
-    public String[] getMembersAdded() {
-        return membersAdded.toArray(new String[membersAdded.size()]);
-    }
+  public abstract void addMember(String member);
 
-    public String[] getMembersRemoved() {
-        return membersRemoved.toArray(new String[membersRemoved.size()]);
-    }
+  public abstract void removeMember(String member);
 
-    public void reset() {
-        super.reset();
-        membersAdded.clear();
-        membersRemoved.clear();
-        membersModified = false;
-    }
+  public abstract String[] getMembersAdded();
+
+  public abstract String[] getMembersRemoved();
+
+  public abstract void reset();
 
 }

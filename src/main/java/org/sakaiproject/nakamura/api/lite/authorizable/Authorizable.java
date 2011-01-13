@@ -17,163 +17,48 @@
  */
 package org.sakaiproject.nakamura.api.lite.authorizable;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-
-import org.apache.commons.lang.StringUtils;
-import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
-import org.sakaiproject.nakamura.api.lite.util.Iterables;
-import org.sakaiproject.nakamura.lite.storage.RemoveProperty;
-
 import java.util.Map;
-import java.util.Set;
 
-/**
- * Base Authorizable object.
- */
-public class Authorizable {
+public interface Authorizable {
 
-    public static final String PASSWORD_FIELD = "pwd";
+  public static final String PASSWORD_FIELD = "pwd";
+  public static final String PRINCIPALS_FIELD = "principals";
+  public static final String MEMBERS_FIELD = "members";
+  public static final String ID_FIELD = "id";
+  public static final String NAME_FIELD = "name";
+  public static final String AUTHORIZABLE_TYPE_FIELD = "type";
+  public static final String GROUP_VALUE = "g";
+  public static final Object USER_VALUE = "u";
+  public static final String ADMINISTRATORS_GROUP = "administrators";
+  public static final String LASTMODIFIED = "lastModified";
+  public static final String LASTMODIFIED_BY = "lastModifiedBy";
+  public static final String CREATED = "create";
+  public static final String CREATED_BY = "createdBy";
+  public static final String NO_PASSWORD = "--none--";
 
-    public static final String PRINCIPALS_FIELD = "principals";
+  public abstract String[] getPrincipals();
 
-    public static final String MEMBERS_FIELD = "members";
+  public abstract String getId();
 
-    public static final String ID_FIELD = "id";
+  // TODO: Unit test
+  public abstract Map<String, Object> getSafeProperties();
 
-    public static final String NAME_FIELD = "name";
+  public abstract void setProperty(String key, Object value);
 
-    public static final String AUTHORIZABLE_TYPE_FIELD = "type";
+  public abstract Object getProperty(String key);
 
-    public static final String GROUP_VALUE = "g";
-    public static final Object USER_VALUE = "u";
+  public abstract void removeProperty(String key);
 
-    public static final String ADMINISTRATORS_GROUP = "administrators";
+  public abstract void addPrincipal(String principal);
 
-    public static final String LASTMODIFIED = "lastModified";
-    public static final String LASTMODIFIED_BY = "lastModifiedBy";
-    public static final String CREATED = "create";
-    public static final String CREATED_BY = "createdBy";
+  public abstract void removePrincipal(String principal);
 
-    private static final Set<String> FILTER_PROPERTIES = ImmutableSet.of(PASSWORD_FIELD, ID_FIELD);
+  public abstract Map<String, Object> getPropertiesForUpdate();
 
-    private static final Set<String> PRIVATE_PROPERTIES = ImmutableSet.of(PASSWORD_FIELD);
+  public abstract void reset();
 
-    public static final String NO_PASSWORD = "--none--";
+  public abstract boolean isModified();
 
-    protected Map<String, Object> authorizableMap;
-    protected Set<String> principals;
-
-    protected String id;
-
-    protected Set<String> propertiesModified;
-    protected boolean principalsModified;
-
-    public Authorizable(Map<String, Object> autorizableMap) {
-        this.authorizableMap = autorizableMap;
-        Object principalsB = authorizableMap.get(PRINCIPALS_FIELD);
-        if (principalsB == null) {
-            this.principals = Sets.newLinkedHashSet();
-        } else {
-            this.principals = Sets.newLinkedHashSet(Iterables.of(StringUtils.split(
-                    StorageClientUtils.toString(principalsB), ';')));
-        }
-        this.id = StorageClientUtils.toString(authorizableMap.get(ID_FIELD));
-        propertiesModified = Sets.newHashSet();
-        principalsModified = false;
-    }
-
-    public String[] getPrincipals() {
-        return principals.toArray(new String[principals.size()]);
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    // TODO: Unit test
-    public Map<String, Object> getSafeProperties() {
-        if ( principalsModified ) {
-            authorizableMap.put(PRINCIPALS_FIELD, StringUtils.join(principals, ';'));
-        }
-        return StorageClientUtils.getFilterMap(authorizableMap, null, FILTER_PROPERTIES);
-    }
-
-    public static boolean isAGroup(Map<String, Object> authProperties) {
-        return (authProperties != null)
-                && GROUP_VALUE.equals(StorageClientUtils.toString(authProperties
-                        .get(AUTHORIZABLE_TYPE_FIELD)));
-    }
-
-    public static boolean isAUser(Map<String, Object> authProperties) {
-        return (authProperties != null)
-                && USER_VALUE.equals(StorageClientUtils.toString(authProperties
-                        .get(AUTHORIZABLE_TYPE_FIELD)));
-    }
-
-    public static boolean isAuthorizable(Map<String, Object> authProperties) {
-        return (authProperties != null) && !authProperties.containsKey(AUTHORIZABLE_TYPE_FIELD);
-    }
-
-    public void setProperty(String key, Object value) {
-        if (!FILTER_PROPERTIES.contains(key)) {
-            Object cv = authorizableMap.get(key);
-            if (!value.equals(cv)) {
-                authorizableMap.put(key, value);
-                propertiesModified.add(key);
-            }
-
-        }
-    }
-
-    public Object getProperty(String key) {
-        if (!PRIVATE_PROPERTIES.contains(key)) {
-            return authorizableMap.get(key);
-        }
-        return null;
-    }
-
-    public void removeProperty(String key) {
-        if (authorizableMap.containsKey(key)) {
-            authorizableMap.put(key,new RemoveProperty());
-            propertiesModified.add(key);
-        }
-    }
-
-    public void addPrincipal(String principal) {
-        if (!principals.contains(principal)) {
-            principals.add(principal);
-            principalsModified = true;
-            
-        }
-    }
-
-    public void removePrincipal(String principal) {
-        if (principals.contains(principal)) {
-            principals.remove(principal);
-            principalsModified = true;
-        }
-    }
-
-    public Map<String, Object> getPropertiesForUpdate() {
-        if ( principalsModified ) {
-            authorizableMap.put(PRINCIPALS_FIELD, StringUtils.join(principals, ';'));
-            propertiesModified.add(PRINCIPALS_FIELD);
-        }
-        return StorageClientUtils.getFilterMap(authorizableMap, propertiesModified, FILTER_PROPERTIES);
-    }
-
-    public void reset() {
-        principalsModified = false;
-        propertiesModified.clear();
-    }
-
-    public boolean isModified() {
-        return principalsModified || (propertiesModified.size() > 0);
-    }
-
-    public boolean hasProperty(String name) {
-        return authorizableMap.containsKey(name);
-    }
+  public abstract boolean hasProperty(String name);
 
 }

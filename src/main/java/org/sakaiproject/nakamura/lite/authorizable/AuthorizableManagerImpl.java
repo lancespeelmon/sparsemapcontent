@@ -111,10 +111,10 @@ public class AuthorizableManagerImpl extends CachingManager implements Authoriza
         if (authorizableMap == null || authorizableMap.isEmpty()) {
             return null;
         }
-        if (Authorizable.isAUser(authorizableMap)) {
-            return new User(authorizableMap);
-        } else if (Authorizable.isAGroup(authorizableMap)) {
-            return new Group(authorizableMap);
+        if (AuthorizableImpl.isAUser(authorizableMap)) {
+            return new UserImpl(authorizableMap);
+        } else if (AuthorizableImpl.isAGroup(authorizableMap)) {
+            return new GroupImpl(authorizableMap);
         }
         return null;
     }
@@ -236,10 +236,10 @@ public class AuthorizableManagerImpl extends CachingManager implements Authoriza
             String password, Map<String, Object> properties) throws AccessDeniedException,
             StorageClientException {
         checkOpen();
-        if (Authorizable.isAUser(properties)) {
+        if (AuthorizableImpl.isAUser(properties)) {
             accessControlManager.check(Security.ZONE_ADMIN, Security.ADMIN_USERS,
                     Permissions.CAN_WRITE);
-        } else if (Authorizable.isAGroup(properties)) {
+        } else if (AuthorizableImpl.isAGroup(properties)) {
             accessControlManager.check(Security.ZONE_ADMIN, Security.ADMIN_GROUPS,
                     Permissions.CAN_WRITE);
         } else {
@@ -274,7 +274,7 @@ public class AuthorizableManagerImpl extends CachingManager implements Authoriza
     public boolean createUser(String authorizableId, String authorizableName, String password,
             Map<String, Object> properties) throws AccessDeniedException, StorageClientException {
         checkOpen();
-        if (!Authorizable.isAUser(properties)) {
+        if (!AuthorizableImpl.isAUser(properties)) {
             Map<String, Object> m = Maps.newHashMap(properties);
             m.put(Authorizable.AUTHORIZABLE_TYPE_FIELD, Authorizable.USER_VALUE);
             properties = m;
@@ -285,7 +285,7 @@ public class AuthorizableManagerImpl extends CachingManager implements Authoriza
     public boolean createGroup(String authorizableId, String authorizableName,
             Map<String, Object> properties) throws AccessDeniedException, StorageClientException {
         checkOpen();
-        if (!Authorizable.isAGroup(properties)) {
+        if (!AuthorizableImpl.isAGroup(properties)) {
             Map<String, Object> m = Maps.newHashMap(properties);
             m.put(Authorizable.AUTHORIZABLE_TYPE_FIELD, Authorizable.GROUP_VALUE);
             properties = m;
@@ -375,11 +375,11 @@ public class AuthorizableManagerImpl extends CachingManager implements Authoriza
                                     .check(Security.ZONE_AUTHORIZABLES, StorageClientUtils
                                             .toString(authMap.get(Authorizable.ID_FIELD)),
                                             Permissions.CAN_READ);
-                            if (Authorizable.isAUser(authMap)) {
-                                authorizable = new User(authMap);
+                            if (AuthorizableImpl.isAUser(authMap)) {
+                                authorizable = new UserImpl(authMap);
                                 return true;
-                            } else if (Authorizable.isAGroup(authMap))
-                                authorizable = new Group(authMap);
+                            } else if (AuthorizableImpl.isAGroup(authMap))
+                                authorizable = new GroupImpl(authMap);
                             return true;
                         } catch (AccessDeniedException e) {
                             LOGGER.debug("Search result filtered ", e.getMessage());
