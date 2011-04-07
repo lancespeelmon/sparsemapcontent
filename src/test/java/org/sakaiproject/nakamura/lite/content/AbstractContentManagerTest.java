@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -526,7 +527,7 @@ public abstract class AbstractContentManagerTest {
     ContentManagerImpl contentManager = new ContentManagerImpl(client,
         accessControlManager, configuration, null, new LoggingStorageListener());
     // add some content with multi-valued properties
-    final String propKey = "prop1";
+    final String propKey = "sakai:tag-uuid";
     final String pathA = "/foo/pathA";
     final String pathX = "/bar/pathX";
     final String[] multiValueA = new String[] { "valueA", "valueB" };
@@ -548,33 +549,35 @@ public abstract class AbstractContentManagerTest {
 
     // now test index search; search for "a" find contentA
     Map<String, Object> searchCriteria = ImmutableMap.of(propKey,
-        (Object) multiValueA[0]);
-//    Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
-    Iterable<Content> iterable = contentManager.find(searchCriteria);
+        (Object) Arrays.asList(multiValueA));
+    Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
+    Iterable<Content> iterable = contentManager.find(orSet);
     Assert.assertNotNull("Iterable should not be null", iterable);
     Iterator<Content> iter = iterable.iterator();
     Assert.assertNotNull("Iterator should not be null", iter);
     Assert.assertTrue("Should have found a match", iter.hasNext());
+    int foundA = 0;
     while(iter.hasNext()) {
       final Content match = iter.next();
-      System.out.println("LDS match=" + match);
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(pathA, match.getPath());
+      Assert.assertNotNull("match should have key: " + propKey, match.getProperty(propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(multiValueA, (String[]) match.getProperty(propKey)));
+      foundA++;
     }
-    Content match = iter.next();
-    Assert.assertNotNull("match should not be null", match);
-    Assert.assertEquals(pathA, match.getPath());
-    Assert.assertNotNull("match should have key: " + propKey, match.getProperty(propKey));
-    Assert.assertTrue("String[] should be equal",
-        Arrays.equals(multiValueA, (String[]) match.getProperty(propKey)));
-    searchCriteria = ImmutableMap.of(propKey, (Object) multiValueA[1]);
-    iterable = contentManager.find(searchCriteria);
-    Assert.assertNotNull(iterable);
-    iter = iterable.iterator();
-    Assert.assertNotNull(iter);
-    Assert.assertTrue("Should have found a match", iter.hasNext());
-    match = iter.next();
-    Assert.assertNotNull(match);
-    Assert.assertNotNull(match.getProperty(propKey));
-    Assert.assertTrue(Arrays.equals(multiValueA,
-        (String[]) iter.next().getProperty(propKey)));
+    Assert.assertTrue("Should have found only one match", foundA == 1);
+//    Content match = iter.next();
+//    searchCriteria = ImmutableMap.of(propKey, (Object) multiValueA[1]);
+//    iterable = contentManager.find(searchCriteria);
+//    Assert.assertNotNull(iterable);
+//    iter = iterable.iterator();
+//    Assert.assertNotNull(iter);
+//    Assert.assertTrue("Should have found a match", iter.hasNext());
+//    match = iter.next();
+//    Assert.assertNotNull(match);
+//    Assert.assertNotNull(match.getProperty(propKey));
+//    Assert.assertTrue(Arrays.equals(multiValueA,
+//        (String[]) iter.next().getProperty(propKey)));
   }
 }
