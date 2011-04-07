@@ -527,18 +527,20 @@ public abstract class AbstractContentManagerTest {
         accessControlManager, configuration, null, new LoggingStorageListener());
     // add some content with multi-valued properties
     final String propKey = "prop1";
+    final String pathA = "/foo/pathA";
+    final String pathX = "/bar/pathX";
     final String[] multiValueA = new String[] { "valueA", "valueB" };
     final String[] multiValueX = new String[] { "valueX", "valueY", "valueZ" };
-    contentManager.update(new Content("/testA", ImmutableMap.of(propKey,
+    contentManager.update(new Content(pathA, ImmutableMap.of(propKey,
         (Object) multiValueA)));
-    contentManager.update(new Content("/testX", ImmutableMap.of(propKey,
+    contentManager.update(new Content(pathX, ImmutableMap.of(propKey,
         (Object) multiValueX)));
 
     // verify state of content
-    Content contentA = contentManager.get("/testA");
-    Content contentX = contentManager.get("/testX");
-    Assert.assertEquals("/testA", contentA.getPath());
-    Assert.assertEquals("/testX", contentX.getPath());
+    Content contentA = contentManager.get(pathA);
+    Content contentX = contentManager.get(pathX);
+    Assert.assertEquals(pathA, contentA.getPath());
+    Assert.assertEquals(pathX, contentX.getPath());
     Map<String, Object> propsA = contentA.getProperties();
     Map<String, Object> propsX = contentX.getProperties();
     Assert.assertTrue(Arrays.equals(multiValueA, (String[]) propsA.get(propKey)));
@@ -546,16 +548,20 @@ public abstract class AbstractContentManagerTest {
 
     // now test index search; search for "a" find contentA
     Map<String, Object> searchCriteria = ImmutableMap.of(propKey,
-        (Object) multiValueA);
-    Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
-    Iterable<Content> iterable = contentManager.find(orSet);
+        (Object) multiValueA[0]);
+//    Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
+    Iterable<Content> iterable = contentManager.find(searchCriteria);
     Assert.assertNotNull("Iterable should not be null", iterable);
     Iterator<Content> iter = iterable.iterator();
     Assert.assertNotNull("Iterator should not be null", iter);
     Assert.assertTrue("Should have found a match", iter.hasNext());
+    while(iter.hasNext()) {
+      final Content match = iter.next();
+      System.out.println("LDS match=" + match);
+    }
     Content match = iter.next();
     Assert.assertNotNull("match should not be null", match);
-    Assert.assertEquals("/testA", match.getPath());
+    Assert.assertEquals(pathA, match.getPath());
     Assert.assertNotNull("match should have key: " + propKey, match.getProperty(propKey));
     Assert.assertTrue("String[] should be equal",
         Arrays.equals(multiValueA, (String[]) match.getProperty(propKey)));
