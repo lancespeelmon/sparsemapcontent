@@ -38,10 +38,10 @@ import java.util.Map;
 
 public class ContentManagerManagerImplTest extends AbstractContentManagerTest {
 
-    @Override
-    protected StorageClientPool getClientPool() throws ClassNotFoundException {
-        return DerbySetup.getClientPool();
-    }
+  @Override
+  protected StorageClientPool getClientPool() throws ClassNotFoundException {
+    return DerbySetup.getClientPool();
+  }
 
   @Test
   public void testMultiValuedIndexSearch() throws StorageClientException,
@@ -52,43 +52,52 @@ public class ContentManagerManagerImplTest extends AbstractContentManagerTest {
     AccessControlManagerImpl accessControlManager = new AccessControlManagerImpl(client,
         currentUser, configuration, null, new LoggingStorageListener(),
         principalValidatorResolver);
-
     ContentManagerImpl contentManager = new ContentManagerImpl(client,
         accessControlManager, configuration, null, new LoggingStorageListener());
+    // add some content with multi-valued properties
     final String propKey = "prop1";
-    final String[] multiValuedProperty = new String[] { "valueX", "valueY" };
-    contentManager.update(new Content("/test", ImmutableMap.of(propKey,
-        (Object) multiValuedProperty)));
+    final String[] multiValueA = new String[] { "valueA", "valueB" };
+    final String[] multiValueX = new String[] { "valueX", "valueY", "valueZ" };
+    contentManager.update(new Content("/testA", ImmutableMap.of(propKey,
+        (Object) multiValueA)));
+    contentManager.update(new Content("/testX", ImmutableMap.of(propKey,
+        (Object) multiValueX)));
 
-    Content content = contentManager.get("/test");
-    Assert.assertEquals("/test", content.getPath());
-    Map<String, Object> p = content.getProperties();
-    Arrays.equals(multiValuedProperty, (String[]) p.get(propKey));
-    Assert.assertTrue(Arrays.equals(multiValuedProperty, (String[]) p.get(propKey)));
-    // now test index search
+    // verify state of content
+    Content contentA = contentManager.get("/testA");
+    Content contentX = contentManager.get("/testX");
+    Assert.assertEquals("/testA", contentA.getPath());
+    Assert.assertEquals("/testX", contentX.getPath());
+    Map<String, Object> propsA = contentA.getProperties();
+    Map<String, Object> propsX = contentX.getProperties();
+    Assert.assertTrue(Arrays.equals(multiValueA, (String[]) propsA.get(propKey)));
+    Assert.assertTrue(Arrays.equals(multiValueX, (String[]) propsX.get(propKey)));
+
+    // now test index search; search for "a" find contentA
     Map<String, Object> searchCriteria = ImmutableMap.of(propKey,
-        (Object) multiValuedProperty[0]);
-    Iterable<Content> iterable = contentManager.find(searchCriteria);
-    Assert.assertNotNull(iterable);
+        (Object) multiValueA);
+    Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
+    Iterable<Content> iterable = contentManager.find(orSet);
+    Assert.assertNotNull("Iterable should not be null", iterable);
     Iterator<Content> iter = iterable.iterator();
-    Assert.assertNotNull(iter);
+    Assert.assertNotNull("Iterator should not be null", iter);
     Assert.assertTrue("Should have found a match", iter.hasNext());
-    Content c = iter.next();
-    Assert.assertNotNull(c);
-    Assert.assertNotNull(c.getProperty(propKey));
-    // may need to adapt if array comes back out of order
-    Assert.assertTrue(Arrays.equals(multiValuedProperty,
-        (String[]) c.getProperty(propKey)));
-    searchCriteria = ImmutableMap.of(propKey, (Object) multiValuedProperty[1]);
+    Content match = iter.next();
+    Assert.assertNotNull("match should not be null", match);
+    Assert.assertEquals("/testA", match.getPath());
+    Assert.assertNotNull("match should have key: " + propKey, match.getProperty(propKey));
+    Assert.assertTrue("String[] should be equal",
+        Arrays.equals(multiValueA, (String[]) match.getProperty(propKey)));
+    searchCriteria = ImmutableMap.of(propKey, (Object) multiValueA[1]);
     iterable = contentManager.find(searchCriteria);
     Assert.assertNotNull(iterable);
     iter = iterable.iterator();
     Assert.assertNotNull(iter);
     Assert.assertTrue("Should have found a match", iter.hasNext());
-    c = iter.next();
-    Assert.assertNotNull(c);
-    Assert.assertNotNull(c.getProperty(propKey));
-    Assert.assertTrue(Arrays.equals(multiValuedProperty, (String[]) iter.next()
-        .getProperty(propKey)));
+    match = iter.next();
+    Assert.assertNotNull(match);
+    Assert.assertNotNull(match.getProperty(propKey));
+    Assert.assertTrue(Arrays.equals(multiValueA,
+        (String[]) iter.next().getProperty(propKey)));
   }
 }
