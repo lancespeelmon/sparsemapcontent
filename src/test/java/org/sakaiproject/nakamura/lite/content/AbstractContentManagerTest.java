@@ -567,17 +567,5 @@ public abstract class AbstractContentManagerTest {
       foundA++;
     }
     Assert.assertTrue("Should have found only one match", foundA == 1);
-//    Content match = iter.next();
-//    searchCriteria = ImmutableMap.of(propKey, (Object) multiValueA[1]);
-//    iterable = contentManager.find(searchCriteria);
-//    Assert.assertNotNull(iterable);
-//    iter = iterable.iterator();
-//    Assert.assertNotNull(iter);
-//    Assert.assertTrue("Should have found a match", iter.hasNext());
-//    match = iter.next();
-//    Assert.assertNotNull(match);
-//    Assert.assertNotNull(match.getProperty(propKey));
-//    Assert.assertTrue(Arrays.equals(multiValueA,
-//        (String[]) iter.next().getProperty(propKey)));
   }
 }
