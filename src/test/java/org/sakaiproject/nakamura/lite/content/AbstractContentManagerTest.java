@@ -32,6 +32,7 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.PrincipalValidatorResolver;
 import org.sakaiproject.nakamura.api.lite.authorizable.User;
 import org.sakaiproject.nakamura.api.lite.content.Content;
+import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.lite.ConfigurationImpl;
 import org.sakaiproject.nakamura.lite.LoggingStorageListener;
 import org.sakaiproject.nakamura.lite.accesscontrol.AccessControlManagerImpl;
@@ -47,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -515,8 +515,383 @@ public abstract class AbstractContentManagerTest {
 
   }
 
+  /**
+   * search for "a" find contentA
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
   @Test
-  public void testMultiValuedIndexSearch() throws StorageClientException,
+  public void testMultiValuedIndexSearchFindA() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) MV.multiValueA[0]);
+    final Iterable<Content> iterable = contentManager.find(searchCriteria);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int foundA = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(MV.pathA, match.getPath());
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(MV.multiValueA, (String[]) match.getProperty(MV.propKey)));
+      foundA++;
+    }
+    Assert.assertTrue("Should have found only one match", foundA == 1);
+  }
+
+  /**
+   * search for "a" find contentA
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindA2() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) MV.multiValueA[1]);
+    final Iterable<Content> iterable = contentManager.find(searchCriteria);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int foundA = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(MV.pathA, match.getPath());
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(MV.multiValueA, (String[]) match.getProperty(MV.propKey)));
+      foundA++;
+    }
+    Assert.assertTrue("Should have found only one match", foundA == 1);
+  }
+
+  /**
+   * search for "x" find contentX only once
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindX() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) MV.multiValueX[0]);
+    final Iterable<Content> iterable = contentManager.find(searchCriteria);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int found = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(MV.pathX, match.getPath());
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(MV.multiValueX, (String[]) match.getProperty(MV.propKey)));
+      found++;
+    }
+    Assert.assertTrue("Should have found only one match", found == 1);
+  }
+
+  /**
+   * search for "x" find contentX only once
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindX2() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) MV.multiValueX[1]);
+    final Iterable<Content> iterable = contentManager.find(searchCriteria);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int found = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(MV.pathX, match.getPath());
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(MV.multiValueX, (String[]) match.getProperty(MV.propKey)));
+      found++;
+    }
+    Assert.assertTrue("Should have found only one match", found == 1);
+  }
+
+  /**
+   * search for "x" find contentX only once
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindX3() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) MV.multiValueX[2]);
+    final Iterable<Content> iterable = contentManager.find(searchCriteria);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int found = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(MV.pathX, match.getPath());
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(MV.multiValueX, (String[]) match.getProperty(MV.propKey)));
+      found++;
+    }
+    Assert.assertTrue("Should have found only one match", found == 1);
+  }
+
+  /**
+   * search for "a" or "b" find contentA only once
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindAorB() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) Arrays.asList(MV.multiValueA));
+    final Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
+    final Iterable<Content> iterable = contentManager.find(orSet);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int foundA = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(MV.pathA, match.getPath());
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(MV.multiValueA, (String[]) match.getProperty(MV.propKey)));
+      foundA++;
+    }
+    Assert.assertTrue("Should have found only one match", foundA == 1);
+  }
+
+  /**
+   * search for "a" or "b" find contentA only once
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindAorB2() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) Arrays.asList(new String[] { MV.multiValueA[1], MV.multiValueA[0] }));
+    final Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
+    final Iterable<Content> iterable = contentManager.find(orSet);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int foundA = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(MV.pathA, match.getPath());
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(MV.multiValueA, (String[]) match.getProperty(MV.propKey)));
+      foundA++;
+    }
+    Assert.assertTrue("Should have found only one match", foundA == 1);
+  }
+
+  /**
+   * search for "a" and "b" find contentA only once
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindAandB() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) Arrays.asList(MV.multiValueA));
+    final Iterable<Content> iterable = contentManager.find(searchCriteria);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int foundA = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertEquals(MV.pathA, match.getPath());
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("String[] should be equal",
+          Arrays.equals(MV.multiValueA, (String[]) match.getProperty(MV.propKey)));
+      foundA++;
+    }
+    Assert.assertTrue("Should have found only one match", foundA == 1);
+  }
+
+  /**
+   * search for "a" and "x" find nothing
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindAandX() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) Arrays.asList(new String[] { MV.multiValueA[0], MV.multiValueX[0] }));
+    final Iterable<Content> iterable = contentManager.find(searchCriteria);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertFalse("Should NOT have found a match", iter.hasNext());
+    int foundA = 0;
+    while (iter.hasNext()) {
+      foundA++;
+    }
+    Assert.assertTrue("Should NOT have found any match", foundA == 0);
+  }
+
+  /**
+   * search for "a" or "x" find contentA and contentB
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindAorX() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) Arrays.asList(new String[] { MV.multiValueA[0], MV.multiValueX[0] }));
+    final Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
+    final Iterable<Content> iterable = contentManager.find(orSet);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int found = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertTrue("Path should match one of the two Contents",
+          MV.pathA.equals(match.getPath()) || MV.pathX.equals(match.getPath()));
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("Multi-valued property should equal one of the two Contents",
+          Arrays.equals(MV.multiValueA, (String[]) match.getProperty(MV.propKey))
+              || Arrays.equals(MV.multiValueX, (String[]) match.getProperty(MV.propKey)));
+      found++;
+    }
+    Assert.assertTrue("Should have found two matches", found == 2);
+  }
+
+  /**
+   * search for "a" or "x" find contentA and contentB
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindAorX2() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) Arrays.asList(new String[] { MV.multiValueA[1], MV.multiValueX[1] }));
+    final Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
+    final Iterable<Content> iterable = contentManager.find(orSet);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int found = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertTrue("Path should match one of the two Contents",
+          MV.pathA.equals(match.getPath()) || MV.pathX.equals(match.getPath()));
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("Multi-valued property should equal one of the two Contents",
+          Arrays.equals(MV.multiValueA, (String[]) match.getProperty(MV.propKey))
+              || Arrays.equals(MV.multiValueX, (String[]) match.getProperty(MV.propKey)));
+      found++;
+    }
+    Assert.assertTrue("Should have found two matches", found == 2);
+  }
+
+  /**
+   * search for "a" or "x" find contentA and contentB
+   * 
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  @Test
+  public void testMultiValuedIndexSearchFindAorX3() throws StorageClientException,
+      AccessDeniedException {
+    final ContentManager contentManager = setupMultiValuedIndexSearch();
+    final Map<String, Object> searchCriteria = ImmutableMap.of(MV.propKey,
+        (Object) Arrays.asList(new String[] { MV.multiValueA[1], MV.multiValueX[2] }));
+    final Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
+    final Iterable<Content> iterable = contentManager.find(orSet);
+    Assert.assertNotNull("Iterable should not be null", iterable);
+    final Iterator<Content> iter = iterable.iterator();
+    Assert.assertNotNull("Iterator should not be null", iter);
+    Assert.assertTrue("Should have found a match", iter.hasNext());
+    int found = 0;
+    while (iter.hasNext()) {
+      final Content match = iter.next();
+      Assert.assertNotNull("match should not be null", match);
+      Assert.assertTrue("Path should match one of the two Contents",
+          MV.pathA.equals(match.getPath()) || MV.pathX.equals(match.getPath()));
+      Assert.assertNotNull("match should have key: " + MV.propKey,
+          match.getProperty(MV.propKey));
+      Assert.assertTrue("Multi-valued property should equal one of the two Contents",
+          Arrays.equals(MV.multiValueA, (String[]) match.getProperty(MV.propKey))
+              || Arrays.equals(MV.multiValueX, (String[]) match.getProperty(MV.propKey)));
+      found++;
+    }
+    Assert.assertTrue("Should have found two matches", found == 2);
+  }
+
+  private ContentManager setupMultiValuedIndexSearch() throws StorageClientException,
       AccessDeniedException {
     AuthenticatorImpl AuthenticatorImpl = new AuthenticatorImpl(client, configuration);
     User currentUser = AuthenticatorImpl.authenticate("admin", "admin");
@@ -524,48 +899,38 @@ public abstract class AbstractContentManagerTest {
     AccessControlManagerImpl accessControlManager = new AccessControlManagerImpl(client,
         currentUser, configuration, null, new LoggingStorageListener(),
         principalValidatorResolver);
-    ContentManagerImpl contentManager = new ContentManagerImpl(client,
-        accessControlManager, configuration, null, new LoggingStorageListener());
+    ContentManager contentManager = new ContentManagerImpl(client, accessControlManager,
+        configuration, null, new LoggingStorageListener());
     // add some content with multi-valued properties
-    final String propKey = "sakai:tag-uuid";
-    final String pathA = "/foo/pathA";
-    final String pathX = "/bar/pathX";
-    final String[] multiValueA = new String[] { "valueA", "valueB" };
-    final String[] multiValueX = new String[] { "valueX", "valueY", "valueZ" };
-    contentManager.update(new Content(pathA, ImmutableMap.of(propKey,
-        (Object) multiValueA)));
-    contentManager.update(new Content(pathX, ImmutableMap.of(propKey,
-        (Object) multiValueX)));
+    Content contentA = contentManager.get(MV.pathA);
+    if (contentA == null) {
+      contentManager.update(new Content(MV.pathA, ImmutableMap.of(MV.propKey,
+          (Object) MV.multiValueA)));
+    }
+    Content contentX = contentManager.get(MV.pathX);
+    if (contentX == null) {
+      contentManager.update(new Content(MV.pathX, ImmutableMap.of(MV.propKey,
+          (Object) MV.multiValueX)));
+    }
 
     // verify state of content
-    Content contentA = contentManager.get(pathA);
-    Content contentX = contentManager.get(pathX);
-    Assert.assertEquals(pathA, contentA.getPath());
-    Assert.assertEquals(pathX, contentX.getPath());
+    contentA = contentManager.get(MV.pathA);
+    contentX = contentManager.get(MV.pathX);
+    Assert.assertEquals(MV.pathA, contentA.getPath());
+    Assert.assertEquals(MV.pathX, contentX.getPath());
     Map<String, Object> propsA = contentA.getProperties();
     Map<String, Object> propsX = contentX.getProperties();
-    Assert.assertTrue(Arrays.equals(multiValueA, (String[]) propsA.get(propKey)));
-    Assert.assertTrue(Arrays.equals(multiValueX, (String[]) propsX.get(propKey)));
+    Assert.assertTrue(Arrays.equals(MV.multiValueA, (String[]) propsA.get(MV.propKey)));
+    Assert.assertTrue(Arrays.equals(MV.multiValueX, (String[]) propsX.get(MV.propKey)));
+    return contentManager;
+  }
 
-    // now test index search; search for "a" find contentA
-    Map<String, Object> searchCriteria = ImmutableMap.of(propKey,
-        (Object) Arrays.asList(multiValueA));
-    Map<String, Object> orSet = ImmutableMap.of("orset0", (Object) searchCriteria);
-    Iterable<Content> iterable = contentManager.find(orSet);
-    Assert.assertNotNull("Iterable should not be null", iterable);
-    Iterator<Content> iter = iterable.iterator();
-    Assert.assertNotNull("Iterator should not be null", iter);
-    Assert.assertTrue("Should have found a match", iter.hasNext());
-    int foundA = 0;
-    while(iter.hasNext()) {
-      final Content match = iter.next();
-      Assert.assertNotNull("match should not be null", match);
-      Assert.assertEquals(pathA, match.getPath());
-      Assert.assertNotNull("match should have key: " + propKey, match.getProperty(propKey));
-      Assert.assertTrue("String[] should be equal",
-          Arrays.equals(multiValueA, (String[]) match.getProperty(propKey)));
-      foundA++;
-    }
-    Assert.assertTrue("Should have found only one match", foundA == 1);
+  private static class MV {
+    private static final String propKey = "sakai:tag-uuid";
+    private static final String pathA = "/multi/pathA";
+    private static final String pathX = "/multi/pathX";
+    private static final String[] multiValueA = new String[] { "valueA", "valueB" };
+    private static final String[] multiValueX = new String[] { "valueX", "valueY",
+        "valueZ" };
   }
 }
