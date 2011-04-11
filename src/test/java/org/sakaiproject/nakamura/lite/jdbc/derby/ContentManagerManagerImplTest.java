@@ -22,9 +22,9 @@ import org.sakaiproject.nakamura.lite.storage.StorageClientPool;
 
 public class ContentManagerManagerImplTest extends AbstractContentManagerTest {
 
-  @Override
-  protected StorageClientPool getClientPool() throws ClassNotFoundException {
-    return DerbySetup.getClientPool();
-  }
+    @Override
+    protected StorageClientPool getClientPool() throws ClassNotFoundException {
+        return DerbySetup.getClientPool();
+    }
 
 }
